@@ -1,0 +1,11 @@
+api_key: d717ac73f44a4007bbff919073dd32083afd4
+email: kevin@crowdsiem.com
+zone_id: a07cf64479c4f2606834f073ac1a671b
+account_id: 
+scope: zone
+dbpath: /var/lib/crowdsec/data/crowdsec.db
+piddir: /var/run/
+update_frequency: 30s
+daemonize: true
+log_mode: file
+log_dir: /var/log/
