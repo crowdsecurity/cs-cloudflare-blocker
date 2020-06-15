@@ -20,7 +20,7 @@ This repository contains a cloudfare-blocker, written in golang, that will bans 
 A cloudfare account is required for this blocker.
 Please provide in the configuration the following information:
  - email used for cloudfare account
- - a valid API key
+ - a valid API key : you can create it in your cloudfare dashboard in : "My Profile" => "Api token"
  - zone or account ID (depending on what you want to block IPs)
 
 
@@ -37,6 +37,26 @@ sudo ./install.sh
 ## Documentation
 
 Please find the documentation [here](https://docs.crowdsec.net/blockers/cloudfare/installation/).
+
+
+### Configuration
+
+The configuration file (located under `/etc/crowdsec/cloudfare-blocker/cloudfare-blocker.yaml`) support those options:
+
+```yaml
+api_key: <API_KEY>                             # your cloudfare api key
+email: <EMAIL_ADDR>                            # your cloudfare email address
+scope: <account|zone>                          # the cloudfare access rule scope : account or zone
+zone_id: <ZONE_ID>                             # your cloudfare zone ID if if the selected scope is "zone"
+account_id: <ACCOUNT_ID>                       # your cloudfare account ID if the selected scope is "account
+dbpath: /var/lib/crowdsec/data/crowdsec.db
+piddir: /var/run/
+update_frequency: 30s
+daemonize: true
+log_mode: file
+log_dir: /var/log/
+
+```
 
 # How it works
 
