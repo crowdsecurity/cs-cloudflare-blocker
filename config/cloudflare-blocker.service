@@ -1,11 +1,11 @@
 [Unit]
-Description=The crowdsec cloudfare connector
+Description=The crowdsec cloudflare connector
 After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=forking
-#PIDFile=${PID}/crowdsec-cloudfare.pid
-ExecStart=${BIN} -c ${CFG}/cloudfare-blocker.yaml
+#PIDFile=${PID}/crowdsec-cloudflare.pid
+ExecStart=${BIN} -c ${CFG}/cloudflare-blocker.yaml
 ExecStartPost=/bin/sleep 0.1
 
 [Install]

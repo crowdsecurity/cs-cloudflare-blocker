@@ -9,10 +9,10 @@ import (
 )
 
 type blockerConfig struct {
-	Email               string `yaml:"email"`                // cloudfare email address
-	APIKey              string `yaml:"api_key"`              // cloudfare API Key
-	ZoneID              string `yaml:"zone_id,omitempty"`    // cloudfare zone ID
-	AccountID           string `yaml:"account_id,omitempty"` // cloudfare account ID
+	Email               string `yaml:"email"`                // cloudflare email address
+	APIKey              string `yaml:"api_key"`              // cloudflare API Key
+	ZoneID              string `yaml:"zone_id,omitempty"`    // cloudflare zone ID
+	AccountID           string `yaml:"account_id,omitempty"` // cloudflare account ID
 	Scope               string `yaml:"scope"`
 	DBPath              string `yaml:"dbpath"`
 	PidDir              string `yaml:"piddir"`

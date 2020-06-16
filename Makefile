@@ -9,7 +9,7 @@ GOGET=$(GOCMD) get
 
 PREFIX?="/"
 PID_DIR = $(PREFIX)"/var/run/"
-BINARY_NAME=cloudfare-blocker
+BINARY_NAME=cloudflare-blocker
 
 all: clean test build
 
@@ -26,7 +26,7 @@ clean:
 	@rm -f $(BINARY_NAME)
 
 
-RELDIR = "cs-cloudfare-blocker-${BUILD_VERSION}"
+RELDIR = "cs-cloudflare-blocker-${BUILD_VERSION}"
 
 .PHONY: release
 release: build
@@ -39,5 +39,5 @@ release: build
 	@chmod +x $(RELDIR)/install.sh
 	@cp uninstall.sh $(RELDIR)/
 	@chmod +x $(RELDIR)/uninstall.sh
-	@tar cvzf cs-cloudfare-blocker.tgz $(RELDIR)
+	@tar cvzf cs-cloudflare-blocker.tgz $(RELDIR)
 	@rm -rf $(RELDIR)

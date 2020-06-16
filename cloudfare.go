@@ -10,13 +10,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/cloudflare/cloudflare-go"
-	cloudfare "github.com/cloudflare/cloudflare-go"
+	cloudflare "github.com/cloudflare/cloudflare-go"
 	"github.com/crowdsecurity/crowdsec/pkg/sqlite"
 	"github.com/crowdsecurity/crowdsec/pkg/types"
 )
 
 type context struct {
-	api       *cloudfare.API
+	api       *cloudflare.API
 	apiKey    string
 	emailAddr string
 	zoneID    string
@@ -24,7 +24,7 @@ type context struct {
 	scope     string
 }
 
-func newCloudfareContext(bConfig *blockerConfig) (*context, error) {
+func newCloudflareContext(bConfig *blockerConfig) (*context, error) {
 	var err error
 
 	ctx := &context{
@@ -35,7 +35,7 @@ func newCloudfareContext(bConfig *blockerConfig) (*context, error) {
 		scope:     bConfig.Scope,
 	}
 
-	ctx.api, err = cloudfare.New(ctx.apiKey, ctx.emailAddr)
+	ctx.api, err = cloudflare.New(ctx.apiKey, ctx.emailAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func newCloudfareContext(bConfig *blockerConfig) (*context, error) {
 	return ctx, nil
 }
 
-func newRuleConfiguration(value string) cloudfare.AccessRuleConfiguration {
-	ruleConfig := cloudfare.AccessRuleConfiguration{}
+func newRuleConfiguration(value string) cloudflare.AccessRuleConfiguration {
+	ruleConfig := cloudflare.AccessRuleConfiguration{}
 	if value != "" {
 		ip := net.ParseIP(value)
 		_, cidr, cidrErr := net.ParseCIDR(value)
@@ -71,7 +71,7 @@ func (c *context) newAccessRule(ba types.BanApplication) error {
 	var err error
 
 	ruleConfig := newRuleConfiguration(ba.IpText)
-	rule := cloudfare.AccessRule{
+	rule := cloudflare.AccessRule{
 		Configuration: ruleConfig,
 	}
 
@@ -87,7 +87,7 @@ func (c *context) newAccessRule(ba types.BanApplication) error {
 		return nil
 
 	}
-	log.Printf("creating access rule for : %s", ba.IpText)
+	log.Debugf("creating access rule for : %s", ba.IpText)
 	switch c.scope {
 	case "account":
 		_, err = c.api.CreateAccountAccessRule(c.accountID, rule)
@@ -106,7 +106,7 @@ func (c *context) newAccessRule(ba types.BanApplication) error {
 func (c *context) listAllAccessRule() (*cloudflare.AccessRuleListResponse, error) {
 	var err error
 
-	rule := cloudfare.AccessRule{
+	rule := cloudflare.AccessRule{
 		Mode: "all",
 	}
 
@@ -126,7 +126,7 @@ func (c *context) listAllAccessRule() (*cloudflare.AccessRuleListResponse, error
 
 }
 
-func (c *context) listAccessRule(rule cloudfare.AccessRule) (*cloudfare.AccessRuleListResponse, error) {
+func (c *context) listAccessRule(rule cloudflare.AccessRule) (*cloudflare.AccessRuleListResponse, error) {
 	var response *cloudflare.AccessRuleListResponse
 	var err error
 
@@ -197,7 +197,7 @@ func (c *context) deleteRule(ba types.BanApplication) error {
 	var err error
 
 	ruleConfig := newRuleConfiguration(ba.IpText)
-	rule := cloudfare.AccessRule{
+	rule := cloudflare.AccessRule{
 		Configuration: ruleConfig,
 	}
 
