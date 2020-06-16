@@ -14,12 +14,12 @@ import (
 var config *blockerConfig
 
 func termHandler(sig os.Signal) error {
-	cloudfareCTX, err := newCloudfareContext(config)
+	cloudflareCTX, err := newCloudflareContext(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = cloudfareCTX.deleteAllRules()
+	err = cloudflareCTX.deleteAllRules()
 	if err != nil {
 		log.Fatalf("error while removing all rules: %s", err)
 	}
@@ -30,7 +30,7 @@ func main() {
 
 	var err error
 
-	configPath := flag.String("c", "", "path to cloudfare-blocker.yaml")
+	configPath := flag.String("c", "", "path to cloudflare-blocker.yaml")
 	flag.Parse()
 
 	if configPath == nil || *configPath == "" {
@@ -48,7 +48,7 @@ func main() {
 			config.LogDir = "/var/log/"
 		}
 		log.SetOutput(&lumberjack.Logger{
-			Filename:   config.LogDir + "/cloudfare-blocker.log",
+			Filename:   config.LogDir + "/cloudflare-blocker.log",
 			MaxSize:    500, //megabytes
 			MaxBackups: 3,
 			MaxAge:     28,   //days
@@ -59,7 +59,7 @@ func main() {
 		log.Fatalf("log mode '%s' unknown, expecting 'file' or 'stdout'", config.LogMode)
 	}
 
-	cloudfareCTX, err := newCloudfareContext(config)
+	cloudflareCTX, err := newCloudflareContext(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,13 +70,13 @@ func main() {
 	}
 
 	if config.Daemon == true {
-		go cloudfareCTX.Run(dbCTX, config.updateFrequency)
+		go cloudflareCTX.Run(dbCTX, config.updateFrequency)
 
 		daemon.SetSigHandler(termHandler, syscall.SIGTERM)
 		//daemon.SetSigHandler(ReloadHandler, syscall.SIGHUP)
 
 		dctx := &daemon.Context{
-			PidFileName: config.PidDir + "/cloudfare-blocker.pid",
+			PidFileName: config.PidDir + "/cloudflare-blocker.pid",
 			PidFilePerm: 0644,
 			WorkDir:     "./",
 			Umask:       027,
@@ -97,7 +97,7 @@ func main() {
 			log.Errorf("Error: %s", err.Error())
 		}
 	} else {
-		cloudfareCTX.Run(dbCTX, config.updateFrequency)
+		cloudflareCTX.Run(dbCTX, config.updateFrequency)
 	}
 
 }
