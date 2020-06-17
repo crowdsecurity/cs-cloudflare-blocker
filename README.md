@@ -62,7 +62,7 @@ log_dir: /var/log/
 
 When the `cloudflare-blocker` service starts, it creates cloudflare access rules from new IPs in the SQLite database by using the cloudflare API.
 
-:warning: the `dbpath` in the [blocker's configuration file](https://github.com/crowdsecurity/cs-cloudflare-blocker/blob/master/config/cloudflare-blocker.yaml#L2) must be consistent with the one used by crowdwatch.
+:warning: the `dbpath` in the [blocker's configuration file](https://github.com/crowdsecurity/cs-cloudflare-blocker/blob/master/config/cloudflare-blocker.yaml#L6) must be consistent with the one used by crowdwatch.
 
 # Troubleshooting
 
