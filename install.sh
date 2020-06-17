@@ -12,7 +12,6 @@ install_cloudflare_blocker() {
 	cp "./config/cloudflare-blocker.yaml" "${CONFIG_DIR}cloudflare-blocker.yaml"
 	CFG=${CONFIG_DIR} PID=${PID_DIR} BIN=${BIN_PATH_INSTALLED} envsubst < ./config/cloudflare-blocker.service > "${SYSTEMD_PATH_FILE}"
 	systemctl daemon-reload
-	systemctl start cloudflare-blocker
 }
 
 

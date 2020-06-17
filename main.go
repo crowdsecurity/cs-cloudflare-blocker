@@ -59,6 +59,8 @@ func main() {
 		log.Fatalf("log mode '%s' unknown, expecting 'file' or 'stdout'", config.LogMode)
 	}
 
+	log.Info("Starting cloudflare-blocker")
+
 	cloudflareCTX, err := newCloudflareContext(config)
 	if err != nil {
 		log.Fatal(err)
