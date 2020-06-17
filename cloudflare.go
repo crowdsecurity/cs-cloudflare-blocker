@@ -228,7 +228,7 @@ func (c *context) newAccessRuleWorker(wg *sync.WaitGroup, ba types.BanApplicatio
 }
 
 func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
-	var wg *sync.WaitGroup
+	var wg sync.WaitGroup
 
 	lastDelTS := time.Now()
 	lastAddTS := time.Now()
@@ -242,7 +242,7 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 	for idx, ba := range bansToAdd {
 		log.Debugf("ban %d/%d", (idx + 1), len(bansToAdd))
 		wg.Add(1)
-		go c.newAccessRuleWorker(wg, ba)
+		go c.newAccessRuleWorker(&wg, ba)
 	}
 	wg.Wait()
 
@@ -263,7 +263,7 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 		for idx, ba := range bas {
 			log.Debugf("delete ban %d/%d", (idx + 1), len(bas))
 			wg.Add(1)
-			go c.deleteRuleByIPWorker(wg, ba)
+			go c.deleteRuleByIPWorker(&wg, ba)
 		}
 		wg.Wait()
 
@@ -279,7 +279,7 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 		for idx, ba := range bansToAdd {
 			log.Debugf("ban %d/%d", (idx + 1), len(bansToAdd))
 			wg.Add(1)
-			go c.newAccessRuleWorker(wg, ba)
+			go c.newAccessRuleWorker(&wg, ba)
 		}
 		wg.Wait()
 	}
