@@ -10,7 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/cloudflare/cloudflare-go"
-	cloudflare "github.com/cloudflare/cloudflare-go"
 	"github.com/crowdsecurity/crowdsec/pkg/sqlite"
 	"github.com/crowdsecurity/crowdsec/pkg/types"
 )
@@ -156,7 +155,7 @@ func (c *context) deleteAllRules() error {
 
 	for _, r := range rules.Result {
 		wg.Add(1)
-		go c.deleteRuleWorker(&wg, r.ID)
+		go c.deleteRuleByIDWorker(&wg, r.ID)
 		cpt++
 	}
 	wg.Wait()
@@ -164,7 +163,7 @@ func (c *context) deleteAllRules() error {
 	return nil
 }
 
-func (c *context) deleteRuleWorker(wg *sync.WaitGroup, ruleID string) {
+func (c *context) deleteRuleByIDWorker(wg *sync.WaitGroup, ruleID string) {
 	defer wg.Done()
 	err := c.deleteAccessRule(ruleID)
 	if err != nil {
@@ -193,8 +192,10 @@ func (c *context) deleteAccessRule(ruleID string) error {
 	return nil
 }
 
-func (c *context) deleteRule(ba types.BanApplication) error {
+func (c *context) deleteRuleByIPWorker(wg *sync.WaitGroup, ba types.BanApplication) error {
 	var err error
+
+	defer wg.Done()
 
 	ruleConfig := newRuleConfiguration(ba.IpText)
 	rule := cloudflare.AccessRule{
@@ -218,7 +219,17 @@ func (c *context) deleteRule(ba types.BanApplication) error {
 	return nil
 }
 
+func (c *context) newAccessRuleWorker(wg *sync.WaitGroup, ba types.BanApplication) {
+	defer wg.Done()
+	err := c.newAccessRule(ba)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+}
+
 func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
+	var wg *sync.WaitGroup
+
 	lastDelTS := time.Now()
 	lastAddTS := time.Now()
 	/*start by getting valid bans in db ^^ */
@@ -230,9 +241,11 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 	log.Infof("found %d bans in DB", len(bansToAdd))
 	for idx, ba := range bansToAdd {
 		log.Debugf("ban %d/%d", (idx + 1), len(bansToAdd))
-		go c.newAccessRule(ba)
-
+		wg.Add(1)
+		go c.newAccessRuleWorker(wg, ba)
 	}
+	wg.Wait()
+
 	/*go for loop*/
 	for {
 		time.Sleep(frequency)
@@ -249,8 +262,10 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 
 		for idx, ba := range bas {
 			log.Debugf("delete ban %d/%d", (idx + 1), len(bas))
-			go c.deleteRule(ba)
+			wg.Add(1)
+			go c.deleteRuleByIPWorker(wg, ba)
 		}
+		wg.Wait()
 
 		bansToAdd, err := getLastBan(dbCTX, lastAddTS)
 		if err != nil {
@@ -263,7 +278,9 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 
 		for idx, ba := range bansToAdd {
 			log.Debugf("ban %d/%d", (idx + 1), len(bansToAdd))
-			go c.newAccessRule(ba)
+			wg.Add(1)
+			go c.newAccessRuleWorker(wg, ba)
 		}
+		wg.Wait()
 	}
 }
