@@ -60,13 +60,6 @@ func main() {
 		if d != nil {
 			return
 		}
-		defer dctx.Release()
-
-		/*if we are into daemon mode, only process signals*/
-		err = daemon.ServeSignals()
-		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-		}
 	}
 
 	/*Configure logging*/
