@@ -42,6 +42,33 @@ func main() {
 		log.Fatalf("unable to load configuration: %s", err)
 	}
 
+	dctx := &daemon.Context{
+		PidFileName: config.PidDir + "/cloudflare-blocker.pid",
+		PidFilePerm: 0644,
+		WorkDir:     "./",
+		Umask:       027,
+	}
+	if config.Daemon == true {
+
+		daemon.SetSigHandler(termHandler, syscall.SIGTERM)
+		//daemon.SetSigHandler(ReloadHandler, syscall.SIGHUP)
+
+		d, err := dctx.Reborn()
+		if err != nil {
+			log.Fatal("Unable to run: ", err)
+		}
+		if d != nil {
+			return
+		}
+		defer dctx.Release()
+
+		/*if we are into daemon mode, only process signals*/
+		err = daemon.ServeSignals()
+		if err != nil {
+			log.Errorf("Error: %s", err.Error())
+		}
+	}
+
 	/*Configure logging*/
 	if config.LogMode == "file" {
 		if config.LogDir == "" {
@@ -71,35 +98,18 @@ func main() {
 		log.Fatalf("unable to init sqlite : %v", err)
 	}
 
-	if config.Daemon == true {
+	if !config.Daemon {
+		cloudflareCTX.Run(dbCTX, config.updateFrequency)
+	} else {
+
 		go cloudflareCTX.Run(dbCTX, config.updateFrequency)
 
-		daemon.SetSigHandler(termHandler, syscall.SIGTERM)
-		//daemon.SetSigHandler(ReloadHandler, syscall.SIGHUP)
-
-		dctx := &daemon.Context{
-			PidFileName: config.PidDir + "/cloudflare-blocker.pid",
-			PidFilePerm: 0644,
-			WorkDir:     "./",
-			Umask:       027,
-		}
-
-		d, err := dctx.Reborn()
-		if err != nil {
-			log.Fatal("Unable to run: ", err)
-		}
-		if d != nil {
-			return
-		}
 		defer dctx.Release()
-
-		/*if we are into daemon mode, only process signals*/
 		err = daemon.ServeSignals()
 		if err != nil {
-			log.Errorf("Error: %s", err.Error())
+			log.Fatalf("lauching daemon error: %s", err)
 		}
-	} else {
-		cloudflareCTX.Run(dbCTX, config.updateFrequency)
+
 	}
 
 }
