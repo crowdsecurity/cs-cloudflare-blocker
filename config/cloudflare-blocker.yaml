@@ -3,9 +3,21 @@ email: <EMAIL_ADDR>
 zone_id: <ZONE_ID>
 account_id: <ACCOUNT_ID>
 scope: <zone|account>
-dbpath: /var/lib/crowdsec/data/crowdsec.db
 piddir: /var/run/
 update_frequency: 30s
 daemonize: true
 log_mode: file
 log_dir: /var/log/
+db_config:
+  ## DB type supported (mysql, sqlite)
+  ## By default it using sqlite
+  type: sqlite
+
+  ## mysql options
+  # db_host: localhost
+  # db_username: crowdsec
+  # db_password: crowdsec
+  # db_name: crowdsec
+
+  ## sqlite options
+  db_path: /var/lib/crowdsec/data/crowdsec.db

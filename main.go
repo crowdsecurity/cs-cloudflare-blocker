@@ -5,7 +5,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/crowdsecurity/crowdsec/pkg/sqlite"
+	"github.com/crowdsecurity/crowdsec/pkg/database"
 	daemon "github.com/sevlyar/go-daemon"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -86,7 +86,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dbCTX, err := sqlite.NewSQLite(map[string]string{"db_path": config.DBPath})
+	dbCTX, err := database.NewDatabase(config.DBConfig)
 	if err != nil {
 		log.Fatalf("unable to init sqlite : %v", err)
 	}
