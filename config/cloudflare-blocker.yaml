@@ -21,3 +21,5 @@ db_config:
 
   ## sqlite options
   db_path: /var/lib/crowdsec/data/crowdsec.db
+  flush: false
+  
