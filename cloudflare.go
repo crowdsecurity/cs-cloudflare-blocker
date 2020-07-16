@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -221,6 +222,10 @@ func (c *context) deleteRuleByIPWorker(wg *sync.WaitGroup, ba types.BanApplicati
 
 func (c *context) newAccessRuleWorker(wg *sync.WaitGroup, ba types.BanApplication) {
 	defer wg.Done()
+	if strings.HasPrefix(ba.MeasureType, "simulation:") {
+		log.Debugf("measure against '%s' is in simulation mode, skipping it", ba.IpText)
+		return
+	}
 	err := c.newAccessRule(ba)
 	if err != nil {
 		log.Fatalf(err.Error())
