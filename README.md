@@ -49,12 +49,24 @@ email: <EMAIL_ADDR>                            # your cloudflare email address
 scope: <account|zone>                          # the cloudflare access rule scope : account or zone
 zone_id: <ZONE_ID>                             # your cloudflare zone ID if if the selected scope is "zone"
 account_id: <ACCOUNT_ID>                       # your cloudflare account ID if the selected scope is "account
-dbpath: /var/lib/crowdsec/data/crowdsec.db
 piddir: /var/run/
 update_frequency: 30s
 daemonize: true
 log_mode: file
 log_dir: /var/log/
+db_config:
+  ## DB type supported (mysql, sqlite)
+  ## By default it using sqlite
+  type: sqlite
+
+  ## mysql options
+  # db_host: localhost
+  # db_username: crowdsec
+  # db_password: crowdsec
+  # db_name: crowdsec
+
+  ## sqlite options
+  db_path: /var/lib/crowdsec/data/crowdsec.db
 
 ```
 
@@ -62,7 +74,7 @@ log_dir: /var/log/
 
 When the `cloudflare-blocker` service starts, it creates cloudflare access rules from new IPs in the SQLite database by using the cloudflare API.
 
-:warning: the `dbpath` in the [blocker's configuration file](https://github.com/crowdsecurity/cs-cloudflare-blocker/blob/master/config/cloudflare-blocker.yaml#L6) must be consistent with the one used by crowdwatch.
+:warning: the `db_config` in the [blocker's configuration file](https://github.com/crowdsecurity/cs-cloudflare-blocker/blob/master/config/cloudflare-blocker.yaml#L6) must be consistent with the one used by crowdsec.
 
 # Troubleshooting
 

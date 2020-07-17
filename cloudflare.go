@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/crowdsecurity/crowdsec/pkg/sqlite"
+	"github.com/crowdsecurity/crowdsec/pkg/database"
 	"github.com/crowdsecurity/crowdsec/pkg/types"
 )
 
@@ -221,20 +222,24 @@ func (c *context) deleteRuleByIPWorker(wg *sync.WaitGroup, ba types.BanApplicati
 
 func (c *context) newAccessRuleWorker(wg *sync.WaitGroup, ba types.BanApplication) {
 	defer wg.Done()
+	if strings.HasPrefix(ba.MeasureType, "simulation:") {
+		log.Debugf("measure against '%s' is in simulation mode, skipping it", ba.IpText)
+		return
+	}
 	err := c.newAccessRule(ba)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
 }
 
-func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
+func (c *context) Run(dbCTX *database.Context, frequency time.Duration) {
 	var wg sync.WaitGroup
 
 	lastDelTS := time.Now()
 	lastAddTS := time.Now()
 	/*start by getting valid bans in db ^^ */
 	log.Infof("fetching existing bans from DB")
-	bansToAdd, err := getNewBan(dbCTX)
+	bansToAdd, err := dbCTX.GetNewBan()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -249,7 +254,7 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 	/*go for loop*/
 	for {
 		time.Sleep(frequency)
-		bas, err := getDeletedBan(dbCTX, lastDelTS)
+		bas, err := dbCTX.GetDeletedBanSince(lastDelTS)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -267,7 +272,7 @@ func (c *context) Run(dbCTX *sqlite.Context, frequency time.Duration) {
 		}
 		wg.Wait()
 
-		bansToAdd, err := getLastBan(dbCTX, lastAddTS)
+		bansToAdd, err := dbCTX.GetNewBanSince(lastAddTS)
 		if err != nil {
 			log.Fatal(err)
 		}
