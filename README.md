@@ -13,18 +13,15 @@
 
 # CrowdSec Cloudflare Blocker
 
-This repository contains a cloudflare-blocker, written in golang, that will bans IP address tagged as malevolent in the SQLite database by pushing access rules to Cloudflare API.
+A blocker that will call Cloudflare's API when an IP is banned or unbanned.
 
-## Requirements
+# How does it work ?
 
-A cloudflare account is required for this blocker.
-Please provide in the configuration the following information:
- - email used for cloudflare account
- - a valid API key : you can create it in your cloudflare dashboard in : "My Profile" => "Api token"
- - zone or account ID (depending on what you want to block IPs)
+cs-cloudflare-blocker will monitor MySQL or SQLite database and call Cloudflare's API to add/remove access rules for malevolent IPs.
 
+# Installation
 
-## Installation
+## Install script
 
 Download the [latest release](https://github.com/crowdsecurity/cs-cloudflare-blocker/releases).
 
@@ -32,25 +29,37 @@ Download the [latest release](https://github.com/crowdsecurity/cs-cloudflare-blo
 tar xzvf cs-cloudflare-blocker.tgz
 cd cs-cloudflare-blocker/
 sudo ./install.sh
+systemctl status cloudflare-blocker
 ```
 
-## Documentation
 
-Please find the documentation [here](https://docs.crowdsec.net/blockers/cloudflare/installation/).
+## From source
 
+:warning: requires go >= 1.13
 
-### Configuration
+```bash
+make release
+cd cs-cloudflare-blocker-vX.X.X
+sudo ./install.sh
+systemctl status cloudflare-blocker
+```
 
-The configuration file (located under `/etc/crowdsec/cloudflare-blocker/cloudflare-blocker.yaml`) support those options:
+# Configuration
+
+By default the blocker expects a SQLite backend, and the configuration file is as :
 
 ```yaml
-api_key: <API_KEY>                             # your cloudflare api key
-email: <EMAIL_ADDR>                            # your cloudflare email address
-scope: <account|zone>                          # the cloudflare access rule scope : account or zone
-zone_id: <ZONE_ID>                             # your cloudflare zone ID if if the selected scope is "zone"
-account_id: <ACCOUNT_ID>                       # your cloudflare account ID if the selected scope is "account
+# Cloudflare API information
+api_key: <API_KEY>
+email: <EMAIL_ADDR>
+zone_id: <ZONE_ID>
+account_id: <ACCOUNT_ID>
+# Scope of the access rules
+scope: <zone|account>
 piddir: /var/run/
+# How often the DB is polled for new bans
 update_frequency: 30s
+# Service-related options
 daemonize: true
 log_mode: file
 log_dir: /var/log/
@@ -67,18 +76,53 @@ db_config:
 
   ## sqlite options
   db_path: /var/lib/crowdsec/data/crowdsec.db
+  flush: false
 
 ```
+
+<details>
+  <summary>MySQL configuration</summary>
+
+```yaml
+# Cloudflare API information
+api_key: <API_KEY>
+email: <EMAIL_ADDR>
+zone_id: <ZONE_ID>
+account_id: <ACCOUNT_ID>
+# Scope of the access rules
+scope: <zone|account>
+piddir: /var/run/
+# How often the DB is polled for new bans
+update_frequency: 30s
+# Service-related options
+daemonize: true
+log_mode: file
+log_dir: /var/log/
+db_config:
+  ## DB type supported (mysql, sqlite)
+  ## By default it using sqlite
+  type: mysql
+
+  ## mysql options
+  db_host: localhost
+  db_username: crowdsec
+  db_password: crowdsec
+  db_name: crowdsec
+
+  ## sqlite options
+  #db_path: /var/lib/crowdsec/data/crowdsec.db
+  flush: false
+
+```
+</details>
 
 # How it works
 
 When the `cloudflare-blocker` service starts, it creates cloudflare access rules from new IPs in the SQLite database by using the cloudflare API.
 
-:warning: the `db_config` in the [blocker's configuration file](https://github.com/crowdsecurity/cs-cloudflare-blocker/blob/master/config/cloudflare-blocker.yaml#L6) must be consistent with the one used by crowdsec.
-
 # Troubleshooting
 
  - Logs are in `/var/log/cloudflare-blocker.log`
- - You can view/interact directly in the ban list either with `cscli` or direct at ipset level
+ - You can view/interact directly in the ban list either with `cscli`
  - Service can be started/stopped with `systemctl start/stop cloudflare-blocker`
 
