@@ -85,10 +85,11 @@ db_config:
 
 ```yaml
 # Cloudflare API information
-api_key: <API_KEY>
-email: <EMAIL_ADDR>
-zone_id: <ZONE_ID>
-account_id: <ACCOUNT_ID>
+api_key: <API_KEY>                             # your cloudflare api key
+email: <EMAIL_ADDR>                            # your cloudflare email address
+scope: <account|zone>                          # the cloudflare access rule scope : account or zone
+zone_id: <ZONE_ID>                             # your cloudflare zone ID if if the selected scope is "zone"
+account_id: <ACCOUNT_ID>                       # your cloudflare account ID if the selected scope is "account
 # Scope of the access rules
 scope: <zone|account>
 piddir: /var/run/
@@ -118,7 +119,13 @@ db_config:
 
 # How it works
 
-When the `cloudflare-blocker` service starts, it creates cloudflare access rules from new IPs in the SQLite database by using the cloudflare API.
+When the `cloudflare-blocker` service starts, it creates cloudflare access rules from new IPs in the database by using the cloudflare API.
+
+Please provide in the configuration the following information:
+ - email used for cloudflare account
+ - a valid API key : you can create it in your cloudflare dashboard in : "My Profile" => "Api token"
+ - zone or account ID (depending on what you want to block IPs)
+
 
 # Troubleshooting
 
